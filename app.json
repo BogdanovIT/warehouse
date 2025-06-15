@@ -4,26 +4,58 @@
     "slug": "BREEZ",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/line-05.png",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "backgroundColor": "#0b3784",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/line-05.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0b3784"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Приложению нужен доступ к камере, чтобы делать фотографии и сканировать QR-коды.",
+        "NSMicrophoneUsageDescription": "Приложению нужен доступ к микрофону, если вы хотите записывать видео со звуком.",
+        "NSPhotoLibraryUsageDescription": "Приложению нужен доступ к вашей галерее, чтобы сохранять и выбирать фотографии."
+      },
+      "bundleIdentifier": "com.yourcompany.breez" 
     },
     "android": {
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO", 
+        "android.permission.READ_MEDIA_IMAGES", 
+        "android.permission.READ_MEDIA_VIDEO" 
+      ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/line-05.png",
+        "backgroundColor": "#0b3784"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.yourcompany.breez" 
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/line-05.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Разрешите доступ к камере для съёмки фото и видео.",
+          "microphonePermission": "Разрешите доступ к микрофону для записи звука в видео."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Разрешите доступ к галерее, чтобы выбирать изображения.",
+          "cameraPermission": "Разрешите доступ к камере, если хотите сделать новое фото." 
+        }
+      ]
+    ],
+    "scheme": "breez"
   }
 }
