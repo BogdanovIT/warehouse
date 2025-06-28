@@ -8,7 +8,7 @@ import { StudentCourseDescription } from "../../entities/course/model/course.mod
 import { Colors } from "../../shared/tokens";
 
 export default function HomePage() {
-    const {isLoading, error, courses} = useAtomValue(courseAtom)
+    const {isLoading, courses} = useAtomValue(courseAtom)
     const loadCourses = useSetAtom(loadCourseAtom)
 
     useEffect(()=>{
@@ -22,8 +22,8 @@ export default function HomePage() {
                 <CourseCard {...item}/>
             </View>
             )}
-    
-    return (
+
+        return (
         <>
         {isLoading && <ActivityIndicator size='large' color={Colors.blue}/>}
             {courses.length >0 && (
@@ -39,6 +39,6 @@ export default function HomePage() {
     )}
 const styles = StyleSheet.create({
     item: {
-        padding: 20
+        padding: 15
     }
 })

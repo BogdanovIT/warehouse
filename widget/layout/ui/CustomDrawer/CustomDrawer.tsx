@@ -1,6 +1,6 @@
 import { DrawerContentComponentProps, DrawerContentScrollView } from "@react-navigation/drawer";
-import { StyleSheet, Text, View, Image } from "react-native";
-import { Colors } from "../../../../shared/tokens";
+import { StyleSheet, View } from "react-native";
+import { CustomFonts, SystemColors } from "../../../../shared/tokens";
 import { Link } from "expo-router";
 import { CloseDrawer } from "../../../../features/layout/UI/CloseDrawer/CloseDrawer";
 import { useAtom, useSetAtom } from "jotai";
@@ -8,11 +8,9 @@ import { logoutAtom } from "../../../../entities/auth/model/auth.state";
 import { loadProfileAtom } from "../../../../entities/user/model/user.state";
 import { useEffect } from "react";
 import { UserMenu } from "../../../../entities/user/ui/UserMenu/UserMenu";
-import DefaultProfileIcon from "../../../../assets/icons/profileIcon";
 import { MenuItem } from "../../../../entities/layout/ui/MenuItem/MenuItem";
 import ExitOutline from "../../../../assets/icons/exit";
 import EnterOutline from "../../../../assets/icons/enter";
-import Stats from "../../../../assets/icons/stats";
 import Barcode from "../../../../assets/icons/barcode";
 import Profile from "../../../../assets/icons/profile";
 import Hammer from "../../../../assets/icons/hammer";
@@ -22,13 +20,14 @@ import HomePage from "../../../../assets/icons/homePage";
 const MENU = [
     // {text: 'Статистика', icon: <DefaultProfileIcon/>, path: 'index'},
     // {text: 'Статистика', icon: <Stats/>, path: 'index'},
+    {text: 'НА ГЛАВНУЮ', icon: <HomePage/>, path: 'index'},
     {text: 'ПРИЕМКА', icon: <EnterOutline/>, path: 'receiving'},
-    {text: 'ОТГРУЗКА', icon: <ExitOutline/>, path: 'statistic'},
+    {text: 'ОТГРУЗКА', icon: <ExitOutline/>, path: 'shipment'},
     {text: 'ШТРИХ-КОД', icon: <Barcode/>, path: 'barcode'},
     {text: 'РАБОТА С БРАКОМ', icon: <Hammer/>, path: 'defect'},
     {text: 'ПРОФИЛЬ', icon: <Profile/>, path: 'profile'},
     {text: 'О ПРОГРАММЕ', icon: <Letter/>, path: 'about'},
-    {text: 'НА ГЛАВНУЮ', icon: <HomePage/>, path: 'index'},
+    
 ]
 
 export function CustomDrawer (props: DrawerContentComponentProps) {
@@ -47,7 +46,7 @@ export function CustomDrawer (props: DrawerContentComponentProps) {
         </View>
             
         <View style={styles.footer}>
-            <Link style={{fontSize: 16, fontFamily: "FiraSansSemiBold", color: Colors.darkBlue}} onPress={ () => logout() }  href={'/login'}>ВЫЙТИ</Link>
+            <Link style={{fontSize: 16, fontFamily: CustomFonts.medium, color: SystemColors.VeryLightBlue}} onPress={ () => logout() }  href={'/login'}>ВЫХОД</Link>
             {/* <Image style={styles.logo} source={require('../../../../assets/line-05.png')}/>             */}
             </View>            
     </DrawerContentScrollView>
@@ -56,10 +55,10 @@ export function CustomDrawer (props: DrawerContentComponentProps) {
 const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
-        backgroundColor: Colors.veryLightBlue
+        backgroundColor: SystemColors.MutedBlue
     },
     header: {
-        paddingBottom: 20
+        paddingBottom: 0,
     },
     logo: {
         width: 50,
@@ -68,12 +67,12 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        color: Colors.darkBlue
+        color: SystemColors.MutedBlue
     },
     footer: {        
         gap:40,
         marginBottom: 40,
         alignItems: 'center',
-        fontFamily: 'FiraSansSemiBold',
+        fontFamily: CustomFonts.medium,
     }
 })

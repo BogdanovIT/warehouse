@@ -1,4 +1,4 @@
-import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { Image, KeyboardAvoidingView, StyleSheet, Text, View } from 'react-native';
 import { Input } from '../shared/input/input';
 import { Button } from '../button/button';
 import { useEffect, useState } from 'react';
@@ -6,6 +6,7 @@ import { ErrorNotification } from '../shared/ErrorNotifications/ErrorNotificatio
 import { Link, router } from 'expo-router';
 import { useAtom } from 'jotai';
 import { loginAtom } from '../entities/auth/model/auth.state';
+import { Colors, CustomFonts, SystemColors } from '../shared/tokens';
 
 export default function Login() {
   const [localError, setLocalError] = useState<string | undefined>()
@@ -40,14 +41,14 @@ export default function Login() {
       <ErrorNotification error={localError} />
       <KeyboardAvoidingView behavior={'padding'} 
       style={styles.content}>
-      <Image style={styles.logo} source={require('./../assets/line-05.png')}/>
+      <Image style={styles.logo} source={require('./../assets/images/logo.png')}/>
       <View style={styles.form}>
-        <Input placeholder='email' onChangeText={setEmail}/>
-        <Input isPassword placeholder='password' onChangeText={setPassword} />
+        <Input placeholder='email' onChangeText={setEmail} placeholderTextColor={SystemColors.VeryLightBlue}/>
+        <Input isPassword placeholder='password' onChangeText={setPassword} placeholderTextColor={SystemColors.VeryLightBlue} />
         <Button text='ВОЙТИ' onPress={submit} isLoading={isLoading}/>
       </View>
-      <Link href={'/restore'}>
-      <Text style={{color: "#a4bbff", fontSize:16}}>восстановить пароль</Text>
+      <Link href={'/restore'} style={{paddingTop: 15, paddingBottom: 105}}>
+      <Text style={{color: SystemColors.VeryLightBlue, fontSize:16, fontFamily: CustomFonts.medium}}>восстановить пароль</Text>
       </Link>
       </KeyboardAvoidingView>
     </View>
@@ -61,13 +62,13 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     padding: 55,
     gap: 15,
-    backgroundColor: "#0b3784",
+    backgroundColor: SystemColors.MutedBlue
   },
   logo: {
     width: 130,
     height: 130,
     resizeMode: 'contain',
-    marginBottom: 90,
+    marginBottom: 120,
     marginTop:45
   },
   content:{
@@ -78,12 +79,12 @@ const styles = StyleSheet.create({
     gap: 25
   },
   input: {
-    backgroundColor: '#a4bbff',
+    backgroundColor: Colors.blue,
     borderWidth: 0.5,
-    borderColor: "#a4bbff"
+    borderColor: Colors.veryLightBlue
   },
   text: {
-    color: '#0b3784',
+    color: 'red',
     fontSize: 16,
   }
 });

@@ -1,4 +1,5 @@
 import Svg, { Path, Circle } from "react-native-svg";
+import { Colors, SystemColors } from "../../shared/tokens";
 
 const EyeOpenIcon = () => (
   <Svg
@@ -9,7 +10,7 @@ const EyeOpenIcon = () => (
   >
     {/* Контур глаза */}
     <Path
-      stroke="#a4bbff"
+      stroke={SystemColors.VeryLightBlue}
       strokeWidth={1.5}
       d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
     />
@@ -18,7 +19,7 @@ const EyeOpenIcon = () => (
       cx={12}
       cy={12}
       r={3}
-      stroke="#a4bbff"
+      stroke={SystemColors.VeryLightBlue}
       strokeWidth={1.5}
     />
   </Svg>

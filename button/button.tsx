@@ -1,11 +1,11 @@
 import { ActivityIndicator, Animated, GestureResponderEvent, Pressable, PressableProps, StyleSheet, Text} from "react-native";
-import { Colors } from "../shared/tokens";
+import { Colors, CustomFonts, SystemColors } from "../shared/tokens";
 
 export function Button ({text, isLoading, ...props}: PressableProps & {text: string, isLoading?: boolean}) {
     const animatedValue = new Animated.Value(100)
     const color = animatedValue.interpolate({
         inputRange: [0,100],
-        outputRange: ["#0b3784", "#abcdef"]
+        outputRange: [SystemColors.LightBlue, SystemColors.LightBlue]
     })
 
     const fadeIn = (e: GestureResponderEvent)=> {
@@ -40,11 +40,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 3,
         height: 48,   
-        backgroundColor: "#3d5f9e",
+        backgroundColor: SystemColors.MutedBlue,
     },
     text: {
-        color: '#0b3784',
-        fontSize: 24,
-        fontFamily: 'FiraSansSemiBold'
+        color: SystemColors.PrimaryBlue,
+        fontSize: 18,
+        fontFamily: CustomFonts.medium
     }
 })

@@ -54,7 +54,13 @@
           "photosPermission": "Разрешите доступ к галерее, чтобы выбирать изображения.",
           "cameraPermission": "Разрешите доступ к камере, если хотите сделать новое фото." 
         }
-      ]
+      ],
+      ["expo-notifications", 
+      {
+        "icon":"./assets/line-05.png",
+        "color": "#ffffff"
+      }
+    ]
     ],
     "scheme": "breez"
   }

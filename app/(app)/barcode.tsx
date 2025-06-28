@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Barcode from '@kichiyaki/react-native-barcode-generator';
+import { SystemColors } from '../../shared/tokens';
 
 type BarcodeFormat = 'CODE128' | 'EAN13' | 'CODE39';
 
@@ -31,9 +32,10 @@ const BarcodeGenerator = () => {
         onChangeText={setInputValue}
         value={inputValue}
         placeholder={
-          format === 'EAN13' ? 'Введите 12-13 цифр' : 'Введите текст'
+          format === 'EAN13' ? 'Введите 12-13 цифр' : 'введите текст'
         }
         keyboardType={format === 'EAN13' ? 'numeric' : 'default'}
+        placeholderTextColor={SystemColors.VeryLightBlue}
       />
 
       <Picker
@@ -61,17 +63,21 @@ const BarcodeGenerator = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 30,
+    backgroundColor: SystemColors.MutedBlue
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    height: 50,
+    borderColor: SystemColors.VeryLightBlue,
     borderWidth: 1,
-    marginBottom: 10,
+    marginBottom: 30,
     paddingHorizontal: 10,
+    fontSize: 16,
+    textAlign: 'center',
+    color: SystemColors.VeryLightBlue
   },
   picker: {
-    marginBottom: 10,
+    marginBottom: 30,
     backgroundColor: 'white',
   },
   barcodeContainer: {

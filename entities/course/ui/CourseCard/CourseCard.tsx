@@ -3,8 +3,7 @@ import { StudentCourseDescription } from "../../model/course.model";
 import { Chip } from "../../../../shared/Chip/Chip";
 import { Button } from "../../../../button/button";
 import { Colors } from "../../../../shared/tokens";
-import MaskedView from "@react-native-masked-view/masked-view";
-import { LinearGradient } from "expo-linear-gradient";
+import { CourseProgress } from "../CourseProgress/CourseProgress";
 
 export function CourseCard ({image, shortTitle,courseOnDirection, alias, tariffs}: StudentCourseDescription) {
     return <View style={styles.card}>
@@ -13,6 +12,7 @@ export function CourseCard ({image, shortTitle,courseOnDirection, alias, tariffs
         }} style={styles.image}
         height={200}/>
         <View style={styles.header}>
+            <CourseProgress totalLessons={120} passedLessons={40}/>
             <Text style={styles.title}>{shortTitle}</Text>
                 <View style={styles.chips}>
                     {courseOnDirection.length >0 && courseOnDirection.map((c)=><Chip key={c.direction.name} text={c.direction.name}/>)}

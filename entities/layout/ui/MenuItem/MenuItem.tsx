@@ -1,7 +1,7 @@
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { ReactNode, useState } from "react";
 import { Pressable, PressableProps, View, Text, StyleSheet } from "react-native";
-import { Colors } from "../../../../shared/tokens";
+import { Colors, CustomFonts, SystemColors } from "../../../../shared/tokens";
 
 interface MenuItemProps { //navigation: DrawerContentComponentProps['navigation']
     drawer: DrawerContentComponentProps
@@ -21,12 +21,11 @@ export function MenuItem({
     return (<Pressable 
     {...props} 
     onPress = { () => drawer.navigation.navigate(path)}
-    //onPress={ () => console.log(path)}
     onPressIn = { () => setClicked(true)}
     onPressOut = { () => setClicked(false)}>
         <View style={{ ...styles.menu,
-            borderColor: isActive ? Colors.veryDarkBlue : Colors.veryLightBlue, 
-            backgroundColor: clicked || isActive ? Colors.lightBlue : Colors.veryLightBlue}}>
+            //borderColor: isActive ? SystemColors.PrimaryBlue : SystemColors.MutedBlue, 
+            backgroundColor: clicked || isActive ? SystemColors.PrimaryBlue : SystemColors.MutedBlue}}>
             {icon}
             <Text style = {styles.text}>{text}</Text>
         </View>
@@ -37,15 +36,16 @@ const styles = StyleSheet.create({
     menu: {
         flexDirection: 'row',
         gap: 20,
-        paddingHorizontal: 24,
-        paddingVertical: 16,
+        paddingHorizontal: 15,
+        paddingVertical: 15,
         alignItems: 'center',
-        //borderRightWidth: 5,
-        borderRadius: 3,
+        //borderRightWidth: 10,
+        borderRadius: 0,
+        
     },
     text: {
-        color: Colors.darkBlue,
+        color: SystemColors.VeryLightBlue,
         fontSize: 16,
-        fontFamily: 'FiraSansSemiBold'
+        fontFamily: CustomFonts.medium
     }
 })

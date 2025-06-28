@@ -19,14 +19,14 @@ interface ImageUploaderProps {
 
 const DEFAULT_IMAGES = [
     require('../../assets/images/recieving/face.jpg'),
+    require('../../assets/images/recieving/0.jpg'),
+    require('../../assets/images/recieving/20.jpg'),
+    require('../../assets/images/recieving/40.jpg'),
+    require('../../assets/images/recieving/60.jpg'),
+    require('../../assets/images/recieving/80.jpg'),
+    require('../../assets/images/recieving/open.jpg'),
     require('../../assets/images/recieving/polnaya_opa.jpg'),
     require('../../assets/images/recieving/plomba.jpg'),
-    require('../../assets/images/recieving/open.jpg'),
-    require('../../assets/images/recieving/80.jpg'),
-    require('../../assets/images/recieving/60.jpg'),
-    require('../../assets/images/recieving/40.jpg'),
-    require('../../assets/images/recieving/20.jpg'),
-    require('../../assets/images/recieving/0.jpg'),
     require('../../assets/images/recieving/N.jpg'),
 ]
 
@@ -163,32 +163,8 @@ export default function Receiving ({onUpload}: ImageUploaderProps) {
                     }}>Авто</Text>
                 </View>
             </View>
-            <View style={styles.toggleButtonContainer}>
-                    <Button 
-                    style={styles.toggleButton}
-                    text={showDefectiveProducts ? "СКРЫТЬ БРАК" : "БРАК В ПРИХОДЕ" }
-                    onPress={toggleDefectiveProducts}/>
-            </View>
-            <View>
-                {showDefectiveProducts && (
-                    <View style={styles.defectiveContainer}>
-                        <Text style={styles.defectiveTitle}>Добавьте фото</Text>
-                        <View style={styles.defectiveImagesContainer}>
-                            {defectiveImages.map((uri, index) => (
-                                <Pressable key={index} onPress={()=> pickDefectiveImages()}>
-                                    <Image
-                                    source={{uri}}
-                                    style = {styles.defectiveImage}/>
-                                </Pressable>
-                            ))}
-                            <Pressable style={styles.addDefectiveButton}
-                            onPress={()=> pickDefectiveImages()}>
-                                <Text style={styles.addDefectiveButtonText}>+</Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                )}
-            </View>
+            
+            
             <ScrollView style={styles.scrollContainer}>
             <View style={styles.container}>
                 {DEFAULT_IMAGES.slice(0,9).map((defaultImage, index)=>(
@@ -224,7 +200,7 @@ const styles = StyleSheet.create({
         gap: 30
     },
     buttonContainer: {
-        paddingVertical: 40, 
+        paddingVertical: 30, 
         alignItems: 'center',
         marginBottom: 40
     },

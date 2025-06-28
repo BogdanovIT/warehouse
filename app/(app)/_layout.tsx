@@ -1,13 +1,12 @@
-import { Redirect, Stack } from "expo-router";
+import { Redirect } from "expo-router";
 import { useAtomValue } from "jotai";
 import { authAtom } from "../../entities/auth/model/auth.state";
 import { Drawer } from 'expo-router/drawer'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Colors } from "../../shared/tokens";
-import { Text } from "react-native";
-import MenuIcon from "../../assets/icons/menu-icon";
+import { CustomFonts, SystemColors } from "../../shared/tokens";
 import { MenuButton } from "../../features/layout/UI/MenuButton/MenuButton";
 import { CustomDrawer } from "../../widget/layout/ui/CustomDrawer/CustomDrawer";
+
 
 export default function AppLayout() {
     const { access_token } = useAtomValue(authAtom)
@@ -20,18 +19,22 @@ export default function AppLayout() {
             drawerContent={(props) => <CustomDrawer {...props}/>} 
             screenOptions={({navigation}) => ({
                 headerStyle: {
-                    backgroundColor: Colors.blue,
+                    height: 70,
+                    backgroundColor: SystemColors.PrimaryBlue,
                 },
                 headerLeft: () => {
-                    return <MenuButton navigation={navigation}/>
+                    return <MenuButton navigation={navigation} style={{marginTop: -34}}/>
                 },
                 headerTitleStyle: {
-                    color: Colors.veryLightBlue,
-                    fontFamily: 'FiraSans',
-                    fontSize: 20
+                    color: SystemColors.VeryLightBlue,
+                    fontFamily: CustomFonts.medium,
+                    fontSize: 18,
+                    marginTop: -34,
+                    paddingTop:0,
+
                 },
                 sceneStyle: {
-                    backgroundColor: Colors.lightBlue
+                    backgroundColor: SystemColors.MutedBlue
                 },
                 
                 headerTitleAlign:'center',
@@ -42,7 +45,7 @@ export default function AppLayout() {
                 <Drawer.Screen  name="profile" options={{
                     title: 'ПРОФИЛЬ'
                 }}/>
-                <Drawer.Screen  name="statistic" options={{
+                <Drawer.Screen  name="shipment" options={{
                     title: 'ОТГРУЗКА'
                 }}/>
                 <Drawer.Screen  name="receiving" options={{

@@ -1,6 +1,6 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import { User } from "../../model/user.model";
-import { Colors } from "../../../../shared/tokens";
+import { Colors, CustomFonts, SystemColors } from "../../../../shared/tokens";
 
 export function UserMenu( { user }: {user: User | null }) {
     if (!user) {
@@ -35,8 +35,8 @@ const styles = StyleSheet.create ({
         borderRadius: 35
     },
     name:{
-        color: Colors.veryDarkBlue,
-        fontSize: 16,
-        fontFamily: 'FiraSans'
+        color: SystemColors.LightBlue,
+        fontSize: 20,
+        fontFamily: CustomFonts.medium
     },
 })

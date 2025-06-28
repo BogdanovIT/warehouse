@@ -1,5 +1,4 @@
 import {  Pressable, StyleSheet, View} from "react-native";
-import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import CloseIcon from "../../../../assets/icons/close";
 
 export function CloseDrawer ({ onClose }: {onClose: ()=>void}) {
@@ -17,9 +16,9 @@ export function CloseDrawer ({ onClose }: {onClose: ()=>void}) {
 const styles = StyleSheet.create({
     button: {
         justifyContent: 'center',
-        alignItems: 'center',
-        position: "absolute",
-        right: 20,
-        top: 20
+        alignItems: 'flex-start',
+        position: 'absolute',
+        right: 0,
+        top: -24
     },
 })

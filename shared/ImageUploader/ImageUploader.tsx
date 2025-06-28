@@ -1,6 +1,6 @@
 import { launchCameraAsync, requestCameraPermissionsAsync,PermissionStatus , useCameraPermissions, useMediaLibraryPermissions } from "expo-image-picker";
 import { Alert, Linking, Pressable, StyleSheet, Text, View } from "react-native";
-import { Colors } from "../tokens";
+import { CustomFonts, SystemColors } from "../tokens";
 import UpLoadIcon from "../../assets/icons/upLoadIcon";
 import FormData from "form-data";
 import axios, { AxiosError } from "axios";
@@ -40,7 +40,6 @@ export function ImageUploader ({onUpload}: ImageUploaderProps) {
     }
     const pickAvatar = async () => {
         const isPermissionGranted = await verifyCameraPermission();
-        console.log(isPermissionGranted)
         if (!isPermissionGranted) return;
         try {
             const result = await launchCameraAsync({
@@ -94,7 +93,7 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         gap: 8,
-        backgroundColor: Colors.blue,
+        backgroundColor: SystemColors.MutedBlue,
         borderRadius:3,
         paddingHorizontal: 20,
         paddingVertical: 17,
@@ -102,7 +101,7 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 16,
-        fontFamily: 'FiraSans',
-        color: Colors.veryLightBlue
+        fontFamily: CustomFonts.regular,
+        color: SystemColors.VeryLightBlue
     }
 })
