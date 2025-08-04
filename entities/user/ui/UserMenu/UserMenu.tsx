@@ -1,6 +1,6 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import { User } from "../../model/user.model";
-import { Colors, CustomFonts, SystemColors } from "../../../../shared/tokens";
+import { CustomFonts, SystemColors } from "../../../../shared/tokens";
 
 export function UserMenu( { user }: {user: User | null }) {
     if (!user) {
@@ -16,7 +16,7 @@ export function UserMenu( { user }: {user: User | null }) {
                 }}
                 />
             ) : (
-            <Image style= {styles.image} source={require('../../../../assets/images/defaultAvatar.png')}/>)}
+            <Image style= {styles.image} source={require('../../../../assets/iconlogo.png')}/>)}
             <Text style={styles.name}>{user.name} {user.surname}</Text>
         </View>
     )

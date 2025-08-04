@@ -27,6 +27,19 @@ const BarcodeGenerator = () => {
 
   return (
     <View style={styles.container}>
+      <View style={{flexDirection:'row'}}>
+      
+      <View style={styles.pickerView}>
+      <Picker
+        selectedValue={format}
+        onValueChange={(itemValue: BarcodeFormat) => setFormat(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item style = {{color: SystemColors.VeryLightBlue}} label="CODE128" value="CODE128" />
+        <Picker.Item style = {{color: SystemColors.VeryLightBlue}} label="EAN13" value="EAN13" />
+        <Picker.Item style = {{color: SystemColors.VeryLightBlue}} label="CODE39" value="CODE39" />
+      </Picker>
+      </View>
       <TextInput
         style={styles.input}
         onChangeText={setInputValue}
@@ -37,17 +50,8 @@ const BarcodeGenerator = () => {
         keyboardType={format === 'EAN13' ? 'numeric' : 'default'}
         placeholderTextColor={SystemColors.VeryLightBlue}
       />
-
-      <Picker
-        selectedValue={format}
-        onValueChange={(itemValue: BarcodeFormat) => setFormat(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label="CODE128" value="CODE128" />
-        <Picker.Item label="EAN13" value="EAN13" />
-        <Picker.Item label="CODE39" value="CODE39" />
-      </Picker>
       
+      </View>
       <View style={styles.barcodeContainer}>
         <Barcode
           value={getBarcodeValue()}
@@ -63,29 +67,47 @@ const BarcodeGenerator = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 30,
+    padding: 24,
     backgroundColor: SystemColors.MutedBlue
   },
   input: {
-    height: 50,
+    height: 60,
     borderColor: SystemColors.VeryLightBlue,
-    borderWidth: 1,
+    borderWidth: 1.5,
+    borderRadius: 3,
     marginBottom: 30,
     paddingHorizontal: 10,
     fontSize: 16,
-    textAlign: 'center',
+    width: "49%",
+    marginLeft:7,
+        
     color: SystemColors.VeryLightBlue
   },
   picker: {
-    marginBottom: 30,
-    backgroundColor: 'white',
+    backgroundColor: SystemColors.MutedBlue,
+    color: SystemColors.VeryLightBlue,
+    borderWidth: 1.5,
+    borderColor: SystemColors.VeryLightBlue,
+    width: "100%",
+
   },
+  pickerView: {
+    borderWidth: 1.5,
+    borderColor: SystemColors.VeryLightBlue,
+    width: "49%",
+    marginBottom: 30,
+    borderRadius: 3,
+    alignContent: 'stretch',
+    height: 60
+  },
+
   barcodeContainer: {
     alignItems: 'center',
     padding: 10,
     backgroundColor: 'white',
     overflow: 'hidden',
     width: '100%',
+    borderRadius: 3
   },
 });
 

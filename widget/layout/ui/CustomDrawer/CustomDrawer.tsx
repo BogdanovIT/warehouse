@@ -24,9 +24,9 @@ const MENU = [
     {text: 'ПРИЕМКА', icon: <EnterOutline/>, path: 'receiving'},
     {text: 'ОТГРУЗКА', icon: <ExitOutline/>, path: 'shipment'},
     {text: 'ШТРИХ-КОД', icon: <Barcode/>, path: 'barcode'},
-    {text: 'РАБОТА С БРАКОМ', icon: <Hammer/>, path: 'defect'},
+    {text: 'РАБОТА С БРАКОМ', icon: <Hammer/>, path: 'brakodel'},
     {text: 'ПРОФИЛЬ', icon: <Profile/>, path: 'profile'},
-    {text: 'О ПРОГРАММЕ', icon: <Letter/>, path: 'about'},
+    {text: 'НАПИСАТЬ РАЗРАБОТЧИКУ', icon: <Letter/>, path: 'about'},
     
 ]
 

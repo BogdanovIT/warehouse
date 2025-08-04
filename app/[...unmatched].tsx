@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { View, Text, StyleSheet, Image } from "react-native";
-import { Colors } from "../shared/tokens";
+import { Colors, CustomFonts, SystemColors } from "../shared/tokens";
 import { Button_2 } from "../button/button_2";
+import { CustomDrawer } from "../widget/layout/ui/CustomDrawer/CustomDrawer";
 
 
 
@@ -13,7 +14,7 @@ export default function UnmatchedCustom() {
     
     return (
         <View style={style.container}>
-            <Image style={style.logo} source={require("./../assets/line-05_blue.png")}/>
+            <Image style={style.logo} source={require("./../assets/images/logo.png")}/>
             <View style={style.content}>
                 <Text style={style.errorText}>ЭТА СТРАНИЦА</Text>
                 <Text style={style.errorText}>ЕЩЕ НЕ СОЗДАНА</Text>
@@ -32,7 +33,7 @@ const style = StyleSheet.create({
         alignItems: 'center',
         padding: 55,
         gap: 15,
-        backgroundColor: Colors.lightBlue,
+        backgroundColor: SystemColors.LightBlue,
 
       },
       logo: {
@@ -51,19 +52,19 @@ const style = StyleSheet.create({
         textAlign: 'center',
       },
     errorText: {
-        fontFamily: 'FiraSansSemiBold',
+        fontFamily: CustomFonts.medium,
         fontSize: 28,
-        color: Colors.veryDarkBlue,
+        color: SystemColors.PrimaryBlue
     
     },
     errorText2: {
-        fontFamily: 'FiraSansSemiBold',
+        fontFamily: CustomFonts.regular,
         fontSize: 28,
-        color: Colors.darkBlue,
+        color: SystemColors.MutedBlue
     },
     comebackText: {
-        fontFamily: 'FiraSans',
+        fontFamily: CustomFonts.regular,
         fontSize: 18,
-        color: Colors.darkBlue,
+        color: SystemColors.MutedBlue
     },
 })

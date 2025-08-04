@@ -23,13 +23,13 @@ export function Input({isPassword, ...props}: TextInputProps & { isPassword?: bo
 const styles = StyleSheet.create({
     input: {
         height:50,
-        backgroundColor: SystemColors.PrimaryBlue,
+        backgroundColor: SystemColors.MutedBlue,
         paddingHorizontal: 24,
         borderRadius: 3,
         fontSize: 16,
         color:SystemColors.VeryLightBlue ,
-        borderWidth: 0.5,
-        //borderColor: SystemColors.VeryLightBlue,
+        borderWidth: 1,
+        borderColor: SystemColors.VeryLightBlue,
         textAlign: 'center',
     },
     eyeicon: {

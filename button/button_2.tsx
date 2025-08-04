@@ -1,5 +1,6 @@
 import { Animated, GestureResponderEvent, Pressable, PressableProps, StyleSheet, Text} from "react-native";
-import { Colors } from "../shared/tokens";
+import { Colors, CustomFonts, SystemColors } from "../shared/tokens";
+import { CustomDrawer } from "../widget/layout/ui/CustomDrawer/CustomDrawer";
 
 export function Button_2 ({text, ...props}: PressableProps & {text: string}) {
     const animatedValue = new Animated.Value(100)
@@ -37,15 +38,15 @@ const styles = StyleSheet.create({
     button: {
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 3,
+        borderRadius: 6,
         borderWidth: 1,
         borderColor: Colors.blue,
         height: 48,   
-        backgroundColor: Colors.veryLightBlue,
+        backgroundColor: SystemColors.VeryLightBlue,
     },
     text: {
         color: '#0b3784',
         fontSize: 16,
-        fontFamily: 'FiraSans'
+        fontFamily: CustomFonts.regular
     }
 })

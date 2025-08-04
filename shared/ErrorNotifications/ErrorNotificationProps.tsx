@@ -1,4 +1,4 @@
 export interface ErrorNotificationProps {
-    error?: string | null
+    error?: string | null | undefined
     //onShow?:() => void
 }

@@ -54,11 +54,11 @@ export default function AppLayout() {
                 <Drawer.Screen  name="barcode" options={{
                     title: 'ШТРИХ - КОД'
                 }}/>
-                <Drawer.Screen  name="defect" options={{
+                <Drawer.Screen  name="brakodel" options={{
                     title: 'РАБОТА С БРАКОМ'
                 }}/>
                 <Drawer.Screen  name="about" options={{
-                    title: 'O ПРОГРАММЕ'
+                    title: 'НАПИСАТЬ РАЗРАБОТЧИКУ'
                 }}/>
             </Drawer>
         </GestureHandlerRootView>

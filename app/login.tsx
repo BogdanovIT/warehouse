@@ -1,33 +1,61 @@
 import { Image, KeyboardAvoidingView, StyleSheet, Text, View } from 'react-native';
-import { Input } from '../shared/input/input';
-import { Button } from '../button/button';
+import { Input } from '@/shared/input/input';
+import { Button } from '@/button/button';
 import { useEffect, useState } from 'react';
-import { ErrorNotification } from '../shared/ErrorNotifications/ErrorNotification';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useAtom } from 'jotai';
-import { loginAtom } from '../entities/auth/model/auth.state';
-import { Colors, CustomFonts, SystemColors } from '../shared/tokens';
+import { loginAtom } from '@/entities/auth/model/auth.state';
+import { CustomFonts, SystemColors } from '@/shared/tokens';
 
 export default function Login() {
-  const [localError, setLocalError] = useState<string | undefined>()
-  const [email, setEmail] = useState<string>()
-  const [password, setPassword] = useState<string>()
+  interface AppError {
+    message: string
+    code?: number
+  }
+  const [localError, setLocalError] = useState<AppError | null>(null)
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
   const [{access_token, isLoading, error}, login] = useAtom(loginAtom)
+  const params = useLocalSearchParams<{ email?: string}>()
+
+  useEffect(() => {
+    if (access_token) {
+      router.replace('/index')
+    }
+  }, [access_token])
+
+  useEffect(() => {
+    if (params?.email) {
+      setEmail(decodeURIComponent(params.email))
+    }
+  }, [params?.email])
+
   const submit = () => {
+    
     if (!email) {
-      setLocalError('invalid email')
+      setLocalError({
+        message: "Поле email обязательно",
+        code: 400
+      })
       return
     }
     if (!password) {
-      setLocalError('invalid password')
+      setLocalError({
+        message: "Поле password обязательно",
+        code: 400
+      })
       return
     }
     login({ email, password})
   }
+  
 
   useEffect(()=> {
     if (error) {
-      setLocalError(error)
+      setLocalError({
+        message: error.message,
+        code: error.code
+      })
     }
   }, [error])
 
@@ -38,17 +66,22 @@ export default function Login() {
   }, [access_token])
   return (
     <View style={styles.container}>
-      <ErrorNotification error={localError} />
+      {/* <ErrorNotification error={localError?.message ? localError.message : null} /> */}
       <KeyboardAvoidingView behavior={'padding'} 
       style={styles.content}>
       <Image style={styles.logo} source={require('./../assets/images/logo.png')}/>
       <View style={styles.form}>
-        <Input placeholder='email' onChangeText={setEmail} placeholderTextColor={SystemColors.VeryLightBlue}/>
+        <Input placeholder='email' onChangeText={setEmail} autoCapitalize='none' keyboardType='email-address'
+         placeholderTextColor={SystemColors.VeryLightBlue}
+         value={email}/>
         <Input isPassword placeholder='password' onChangeText={setPassword} placeholderTextColor={SystemColors.VeryLightBlue} />
-        <Button text='ВОЙТИ' onPress={submit} isLoading={isLoading}/>
+        <Button text='ВОЙТИ' onPress={submit} isLoading={isLoading} style={{paddingBottom: 15}}/>
       </View>
-      <Link href={'/restore'} style={{paddingTop: 15, paddingBottom: 105}}>
-      <Text style={{color: SystemColors.VeryLightBlue, fontSize:16, fontFamily: CustomFonts.medium}}>восстановить пароль</Text>
+      <Link href={'/restore'} style={{paddingTop: 15}}>
+      <Text style={{color: SystemColors.VeryLightBlue, fontSize:16, fontFamily: CustomFonts.medium}}>Восстановить пароль</Text>
+      </Link>
+      <Link href={'/register'} style={{paddingTop: 15}}>
+      <Text style={{color: SystemColors.VeryLightBlue, fontSize:16, fontFamily: CustomFonts.medium}}>Зарегистрироваться</Text>
       </Link>
       </KeyboardAvoidingView>
     </View>
@@ -62,7 +95,8 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     padding: 55,
     gap: 15,
-    backgroundColor: SystemColors.MutedBlue
+    backgroundColor: SystemColors.MutedBlue,
+    paddingBottom: 150
   },
   logo: {
     width: 130,
@@ -79,9 +113,9 @@ const styles = StyleSheet.create({
     gap: 25
   },
   input: {
-    backgroundColor: Colors.blue,
+    backgroundColor: SystemColors.MutedBlue,
     borderWidth: 0.5,
-    borderColor: Colors.veryLightBlue
+    borderColor: SystemColors.VeryLightBlue
   },
   text: {
     color: 'red',

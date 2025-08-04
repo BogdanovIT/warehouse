@@ -1,7 +1,7 @@
-import { Alert, Image, LayoutAnimation, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Animated, Image, LayoutAnimation, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import SwitchButton from "../../switch/switch";
 import { CustomFonts, SystemColors } from "../../shared/tokens";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input2 } from "../../shared/input/input copy";
 import { launchCameraAsync, requestCameraPermissionsAsync, PermissionStatus, useCameraPermissions, useMediaLibraryPermissions } from "expo-image-picker";
 import axios, { AxiosError } from "axios";
@@ -10,7 +10,11 @@ import { FILE_API } from "../../shared/api";
 import FormData from "form-data";
 import { Button_2 } from "../../button/button_2";
 import { Button } from "../../button/button";
-
+import { Input } from "../../shared/input/input";
+import { getUserProfile } from "../../api/user";
+import { userProfileAtom } from "../../entities/user/model/user.state";
+import { authAtom } from "../../entities/auth/model/auth.state";
+import { useAtom } from "jotai";
 
 interface ImageUploaderProps {
     onUpload: (uri:string) => void
@@ -24,19 +28,59 @@ const DEFAULT_IMAGES = [
     require('../../assets/images/recieving/40.jpg'),
     require('../../assets/images/recieving/60.jpg'),
     require('../../assets/images/recieving/80.jpg'),
-    require('../../assets/images/recieving/open.jpg'),
-    require('../../assets/images/recieving/polnaya_opa.jpg'),
+    require('../../assets/images/recieving/open_100.jpg'),
+    require('../../assets/images/recieving/zakryto.jpg'),
     require('../../assets/images/recieving/plomba.jpg'),
-    require('../../assets/images/recieving/N.jpg'),
+    require('../../assets/images/recieving/number_container.jpg'),
 ]
 
-export default function Receiving ({onUpload}: ImageUploaderProps) {
+export default function Shipment ({onUpload}: ImageUploaderProps) {
     const [isContainer, setIsContaner] = useState(false)
-    const [libraryPermission, requestLibraryPermission] = useMediaLibraryPermissions()
     const [imageUris, setImageUris] = useState<(string | null)[]>(Array(10).fill(null))
     const [cameraPermissionInfo, requestPermission] = useCameraPermissions();
     const [showDefectiveProducts, setShowDefectiveProducts] = useState(false)
-    const [defectiveImages, setDefectiveImages] = useState<string[]>([])
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [uploadedPhotoPaths, setUploadedPhotoPaths] = useState<string[]>([])
+    const [gateNumber, setGateNumber] = useState('')
+    const [auth] = useAtom(authAtom)
+    const [userProfile, setUserProfile] = useAtom(userProfileAtom)
+    useEffect(()=> {loadProfileDebounced()}, [auth?.access_token])
+
+    const buttonScale = useRef( new Animated.Value(1)).current
+    const animateButton = () => {
+        Animated.sequence([
+            Animated.timing(buttonScale, {
+                toValue: 0.95,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(buttonScale, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+            })
+        ]).start()
+    }
+    const [tempPhotoUris, setTempPhotoUris] = useState<(string | null )[]>(Array(10).fill(null))
+
+    function debounce<F extends (...args: any[]) => any>(func: F, wait: number): F {
+        let timeout: NodeJS.Timeout
+        return ((...args: any[]) => {
+            clearTimeout(timeout)
+            timeout = setTimeout(()=>func(...args), wait)
+        }) as F
+    }
+
+    const loadProfileDebounced = debounce(async () => {
+        if (auth?.access_token && !userProfile) {
+            try {
+                const profile = await getUserProfile(auth.access_token!)
+                setUserProfile(profile)
+            } catch (error) {
+                console.error("Ошибка загрузки профиля", error)
+            }
+        }
+    }, 500)
     const verifyCameraPermission = async () => {
         const cameraPermissionInfo = await requestCameraPermissionsAsync()
         if (cameraPermissionInfo?.status === PermissionStatus.UNDETERMINED) {
@@ -63,64 +107,88 @@ export default function Receiving ({onUpload}: ImageUploaderProps) {
             const result = await launchCameraAsync({
                 mediaTypes: ['images'],
                 allowsEditing: false,
-                //aspect: [16, 9],
                 quality: 1,
             });            
             if (!result.canceled) {
-                const newImageUris = [...imageUris]
+                const newImageUris = [...tempPhotoUris]
                 newImageUris[index] = result.assets[0].uri
-                setImageUris(newImageUris)
-                await uploadToServer(result.assets[0].uri, result.assets[0].fileName ?? '')
+                setTempPhotoUris(newImageUris)
             }
         } catch (error) {
             console.error('Ошибка при вызове камеры:', error);
             Alert.alert('Ошибка', 'Не удалось открыть камеру');
         }
     }
-    const pickDefectiveImages = async () => {
-        const isPermissionGranted = await verifyCameraPermission()
-        if (!isPermissionGranted) return
+    const uploadPhotoToServer = async (photos: string[]) => {
         try {
-            const result = await launchCameraAsync({
-                mediaTypes: ['images'],
-                allowsEditing: false,
-                quality: 1
+            const formData = new FormData()
+            photos.forEach((uri, index) => {
+                formData.append('photos', {
+                    uri,
+                    name: `Отгрузка_${Date.now().toLocaleString}_Ворота${gateNumber}.jpg`,
+                    type: 'image/jpeg'
+                } as any)
             })
-            if (!result.canceled) {
-                const newDefectiveImages = [...defectiveImages, result.assets[0].uri]
-                setDefectiveImages(newDefectiveImages)
-                await uploadToServer(result.assets[0].uri, result.assets[0].fileName ?? '')
+            const response = await fetch('http://90.189.219.97:8081/api/upload-temp-photos', {
+                method: 'POST',
+                body: formData as any,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            })
+            if (!response.ok) {
+                throw new Error("Ошибка загрузки фотографий на сервер")
             }
+            return await response.json()
         } catch (error) {
-            console.error('Ошибка при вызове камеры:', error)
-            Alert.alert('Ошибка', 'Не удалось открыть камеру')
+            console.error("Ошибка загрузки фотографий на сервер:", error)
+            throw error
         }
     }
-    const uploadToServer = async (uri: string, name: string) => {
-        const formData = new FormData()
-        formData.append('files', {
-            uri,
-            name,
-            type: 'image/jpeg'
-        })
-        try {const { data } = await axios.post<UploadResponse>(FILE_API.uploadImage, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        onUpload(data.urls.original)
-    } catch(error) {
-        if (error instanceof AxiosError) {
-            console.error(error)
-        }
-        return null
-        }
     
+    const sendShipmentsPhoto = async () => {
+        if (!gateNumber) {
+            Alert.alert("Укажите номер ворот")
+            return
+        }
+        const photosToUpload = tempPhotoUris.filter(uri => uri) as string[]
+        if (photosToUpload.length === 0) {
+            Alert.alert("Недостаточно фотографий для отправки")
+            return
+        }
+
+        setIsSubmitting(true)
+        try {
+            const { savedPaths } = await uploadPhotoToServer(photosToUpload)
+            const response  = await fetch('http://90.189.219.97:8081/api/shipment/send', {
+                method: "POST",
+                body: JSON.stringify({
+                    photoPaths: savedPaths,
+                    gateNumber: gateNumber,
+                    recipients: userProfile?.operators || []
+                }),
+                headers: { 'Content-Type': 'application/json'}
+            })
+            if (!response.ok) throw new Error("Ошибка отправки")
+
+            Alert.alert("Фото успешно отправлены")
+            setImageUris(Array(10).fill(null))
+            setTempPhotoUris(Array(10).fill(null))
+            setGateNumber('')
+        } catch (error: unknown) {
+            if (error instanceof Error)
+            {Alert.alert("Ошибка:", error.message)}
+            else {Alert.alert("Неизвестная ошибка")
+                console.error(error)
+            }
+        } finally {
+            setIsSubmitting(false)
+        }
     }
+
     const clearAllImages = () => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
         setImageUris(Array(10).fill(null))
-        setDefectiveImages([])
         Alert.alert("Все изображения удалены")
     }
     const toggleDefectiveProducts = () => {
@@ -131,21 +199,21 @@ export default function Receiving ({onUpload}: ImageUploaderProps) {
         <SafeAreaView style={{flex: 1}}>
             <View>
                 <View style={{paddingTop: 10, flexDirection: 'row'}}>
-                    <View style={{width: '40%', 
-                        alignItems: 'center',
+                    <View style={{width: '45%', 
+                        alignItems: 'flex-start',
                         paddingLeft: 20,
                         justifyContent: 'center'}}>
                             <Text style={{...styles.text, color: SystemColors.VeryLightBlue}}>Ворота №</Text>
                     </View>
-                    <View style={{width: '60%', 
+                    <View style={{width: '55%', 
                         alignItems: 'flex-start', 
                         justifyContent: 'center',
-                        }}><Input2 />
+                        }}><Input style={{width: 40,borderRadius: 3, color: SystemColors.VeryLightBlue, textAlign: 'center', borderColor: SystemColors.VeryLightBlue, borderWidth: 1}} value={gateNumber} onChangeText={text => setGateNumber(text)}/>
                     </View>
                 </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop:10, paddingBottom: 15}}>
-                <View style={{width: '45%', alignItems: 'center', paddingLeft: 8}}>
+                <View style={{width: '45%', alignItems: 'flex-start', paddingLeft: 20}}>
                     <Text style={{...styles.text, 
                         color: !isContainer? SystemColors.VeryLightBlue : SystemColors.VeryLightBlue,
                         opacity: isContainer? 0.15 : 1
@@ -156,7 +224,7 @@ export default function Receiving ({onUpload}: ImageUploaderProps) {
                     value={isContainer}
                     onChange={(newValue) => setIsContaner(newValue)}/>
                 </View>
-                <View style={{width: '45%', alignItems: 'flex-start', paddingLeft: 30}}>
+                <View style={{width: '45%', alignItems: 'flex-start', paddingLeft: 55}}>
                     <Text style={{...styles.text, 
                         color: isContainer? SystemColors.VeryLightBlue : SystemColors.VeryLightBlue,
                         opacity: isContainer? 1 : 0.15
@@ -169,21 +237,24 @@ export default function Receiving ({onUpload}: ImageUploaderProps) {
             <View style={styles.container}>
                 {DEFAULT_IMAGES.slice(0,9).map((defaultImage, index)=>(
                 <Pressable key={index} onPress={()=>pickAvatar(index)}>
-                    <Image source={imageUris[index] ? {uri: imageUris[index]!} : defaultImage}
+                    <Image source={tempPhotoUris[index] ? {uri: tempPhotoUris[index]!} : defaultImage}
                     style={{ width: '90%', height: undefined, resizeMode:'cover', aspectRatio:16/9, borderRadius: 3}}/>
                 </Pressable>
                 ))}
                 { !isContainer && (
                     <Pressable onPress={()=> pickAvatar(9)}>
                         <Image 
-                        source={imageUris[9] ? {uri: imageUris[9]!} : DEFAULT_IMAGES[9]}
+                        source={tempPhotoUris[9] ? {uri: tempPhotoUris[9]!} : DEFAULT_IMAGES[9]}
                         style={{ width: '90%', height: undefined, resizeMode:'cover', aspectRatio:16/9, borderRadius: 3}}
                         />
                     </Pressable>
                 )}
             </View>
             <View style={styles.buttonContainer}>
-            <Button style={styles.button} text="ОТПРАВИТЬ" onPress={clearAllImages}/>
+            <Animated.View style={{transform: [{ scale: buttonScale }] }}>
+            <Button style={styles.button} text={isSubmitting ? "ОТПРАВКА..." : "ОТПРАВИТЬ"} onPress={sendShipmentsPhoto}
+            disabled={isSubmitting}/>
+            </Animated.View>
             </View>
         </ScrollView>
         </SafeAreaView>
@@ -205,7 +276,8 @@ const styles = StyleSheet.create({
         marginBottom: 40
     },
     button: {
-        width: '90%'
+        width: 250,
+        alignSelf: 'center'
     },
     scrollContainer: {
         flexGrow: 1,

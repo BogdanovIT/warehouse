@@ -1,42 +1,78 @@
-import { Alert, Image, LayoutAnimation, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Animated, Image, LayoutAnimation, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import SwitchButton from "../../switch/switch";
 import { CustomFonts, SystemColors } from "../../shared/tokens";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input2 } from "../../shared/input/input copy";
 import { launchCameraAsync, requestCameraPermissionsAsync, PermissionStatus, useCameraPermissions, useMediaLibraryPermissions } from "expo-image-picker";
 import axios, { AxiosError } from "axios";
 import { UploadResponse } from "../../shared/ImageUploader/imageUploader.interface";
 import { FILE_API } from "../../shared/api";
 import FormData from "form-data";
-import { Button_2 } from "../../button/button_2";
 import { Button } from "../../button/button";
+import { DefectivePhotosHandler } from "../../components/DefectivePhotosHandler";
+import { useOperators } from "../../hooks/useOperators";
+import { useAtom } from "jotai";
+import { getUserProfile } from "../../api/user";
+import { userProfileAtom } from "../../entities/user/model/user.state";
+import { authAtom } from "../../entities/auth/model/auth.state";
+import { Input } from "../../shared/input/input";
 
-
-interface ImageUploaderProps {
-    onUpload: (uri:string) => void
-    onError? : (error: string) => void
-}
 
 const DEFAULT_IMAGES = [
     require('../../assets/images/recieving/face.jpg'),
-    require('../../assets/images/recieving/polnaya_opa.jpg'),
+    require('../../assets/images/recieving/zakryto.jpg'),
     require('../../assets/images/recieving/plomba.jpg'),
-    require('../../assets/images/recieving/open.jpg'),
+    require('../../assets/images/recieving/open_100.jpg'),
     require('../../assets/images/recieving/80.jpg'),
     require('../../assets/images/recieving/60.jpg'),
     require('../../assets/images/recieving/40.jpg'),
     require('../../assets/images/recieving/20.jpg'),
     require('../../assets/images/recieving/0.jpg'),
-    require('../../assets/images/recieving/N.jpg'),
+    require('../../assets/images/recieving/number_container.jpg'),
 ]
 
-export default function Receiving ({onUpload}: ImageUploaderProps) {
+export default function Receiving () {
+    const [auth] = useAtom(authAtom)
+    const [userProfile, setUserProfile] = useAtom(userProfileAtom)
+    const [gateNumber, setGateNumber] = useState('')
     const [isContainer, setIsContaner] = useState(false)
-    const [libraryPermission, requestLibraryPermission] = useMediaLibraryPermissions()
-    const [imageUris, setImageUris] = useState<(string | null)[]>(Array(10).fill(null))
+    const [processPhotos, setProcessPhotos] = useState<(string | null)[]>(Array(10).fill(null))
     const [cameraPermissionInfo, requestPermission] = useCameraPermissions();
-    const [showDefectiveProducts, setShowDefectiveProducts] = useState(false)
-    const [defectiveImages, setDefectiveImages] = useState<string[]>([])
+    const [defectivePhotos, setDefectivePhotos] = useState<string[]>([])
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [comment, setComment] = useState('')
+    const [resetPhotos, setResetPhotos] = useState(false)
+
+    const buttonScale = useRef( new Animated.Value(1)).current
+    const animateButton = () => {
+        Animated.sequence([
+            Animated.timing(buttonScale, {
+                toValue: 0.95,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(buttonScale, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+            })
+        ]).start()
+    }
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            if (auth?.access_token && !userProfile) {
+                try {
+                    const profile = await getUserProfile(auth.access_token)
+                    setUserProfile(profile)
+                } catch (error) {
+                    console.error("Ошибка загрузки профиля", error)
+                }
+            }
+        }
+        loadProfile()
+    }, [auth?.access_token])
+
     const verifyCameraPermission = async () => {
         const cameraPermissionInfo = await requestCameraPermissionsAsync()
         if (cameraPermissionInfo?.status === PermissionStatus.UNDETERMINED) {
@@ -56,96 +92,127 @@ export default function Receiving ({onUpload}: ImageUploaderProps) {
         }        
         return true;
     }
-    const pickAvatar = async (index: number) => {
+    const takePhoto = async (index: number) => {
         const isPermissionGranted = await verifyCameraPermission();
         if (!isPermissionGranted) return;
         try {
             const result = await launchCameraAsync({
                 mediaTypes: ['images'],
                 allowsEditing: false,
-                //aspect: [16, 9],
                 quality: 1,
             });            
             if (!result.canceled) {
-                const newImageUris = [...imageUris]
-                newImageUris[index] = result.assets[0].uri
-                setImageUris(newImageUris)
-                await uploadToServer(result.assets[0].uri, result.assets[0].fileName ?? '')
+                const newPhotos = [...processPhotos]
+                newPhotos[index] = result.assets[0].uri
+                setProcessPhotos(newPhotos)
             }
         } catch (error) {
             console.error('Ошибка при вызове камеры:', error);
             Alert.alert('Ошибка', 'Не удалось открыть камеру');
         }
     }
-    const pickDefectiveImages = async () => {
-        const isPermissionGranted = await verifyCameraPermission()
-        if (!isPermissionGranted) return
-        try {
-            const result = await launchCameraAsync({
-                mediaTypes: ['images'],
-                allowsEditing: false,
-                quality: 1
-            })
-            if (!result.canceled) {
-                const newDefectiveImages = [...defectiveImages, result.assets[0].uri]
-                setDefectiveImages(newDefectiveImages)
-                await uploadToServer(result.assets[0].uri, result.assets[0].fileName ?? '')
-            }
-        } catch (error) {
-            console.error('Ошибка при вызове камеры:', error)
-            Alert.alert('Ошибка', 'Не удалось открыть камеру')
-        }
-    }
-    const uploadToServer = async (uri: string, name: string) => {
-        const formData = new FormData()
-        formData.append('files', {
-            uri,
-            name,
-            type: 'image/jpeg'
-        })
-        try {const { data } = await axios.post<UploadResponse>(FILE_API.uploadImage, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        onUpload(data.urls.original)
-    } catch(error) {
-        if (error instanceof AxiosError) {
-            console.error(error)
-        }
-        return null
-        }
     
+    const uploadPhotos = async (photos: string[], type: 'process' | 'defect') => {
+        const formData = new FormData()
+        photos.forEach((uri, index) => {
+            if(uri) {
+                formData.append('photos', {
+                    uri,
+                    name: `${type}_${Date.now()}_${index}.jpg`,
+                    type: 'image/jpeg'
+                } as any)
+            }
+        })
+        const response = await fetch('http://90.189.219.97:8081/api/upload-temp-photos', {
+            method: 'POST',
+            body: formData as any,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        })
+        if (!response.ok) throw new Error("Ошибка загрузки фото на сервер")
+            return await response.json()
+       }
+       const handleSubmit = async () => {
+        if (!gateNumber) {
+            Alert.alert("Укажите номер ворот")
+            return
+        }
+        const processPhotosToUpload = processPhotos.filter(uri => uri) as string[]
+        if (processPhotosToUpload.length === 0) {
+            Alert.alert("Недостаточно фото для отправки")
+            return
+        }
+        setIsSubmitting(true)
+        try {
+            const allPhotos = [...processPhotosToUpload, ...defectivePhotos]
+            const uploadFormData = new FormData()
+            allPhotos.forEach((uri, index) => {
+                uploadFormData.append('photos', {
+                    uri,
+                    name: `photo_${Date.now()}_${index}.jpg`,
+                    type: 'image/jpeg'
+                } as any)
+            })
+            const uploadResponse = await fetch('http://90.189.219.97:8081/api/upload-temp-photos', {
+                method: 'POST',
+                body: uploadFormData as any,
+                headers: {'Content-Type': 'multipart/form-data',}
+            })
+            if (!uploadResponse.ok) throw new Error ("Ошибка загрузки фото на сервер")
+            const { savedPaths } = await uploadResponse.json()
+            const processPaths = savedPaths.slice(0, processPhotosToUpload.length)
+            const defectPaths = savedPaths.slice(processPhotosToUpload.length)
+            const mailData = {
+                gateNumber,
+                recipients: userProfile?.operators || [],
+                processPhotos: processPaths,
+                defectivePhotos: defectPaths,
+            }
+            const mailResponse = await fetch('http://90.189.219.97:8081/api/receiving/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json',},
+                body: JSON.stringify(mailData)
+            })
+            const result = await mailResponse.json()
+            if (!result.success) throw new Error ("Ошибка отправки письма клиент")
+
+
+            Alert.alert("Успешно", "Отчет отправлен")
+            setProcessPhotos(Array(10).fill(null))
+            setDefectivePhotos([])
+            setGateNumber('')
+            setComment('')
+            setResetPhotos(prev => !prev)
+        } catch (error: any) {
+            Alert.alert("Ошибка", error.message || "Непредвиденная ошибка")
+            console.error(error)
+        } finally {
+            setIsSubmitting(false)
+        }
     }
-    const clearAllImages = () => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        setImageUris(Array(10).fill(null))
-        setDefectiveImages([])
-        Alert.alert("Все изображения удалены")
-    }
-    const toggleDefectiveProducts = () => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        setShowDefectiveProducts(!showDefectiveProducts)
-    }
+
     return (
         <SafeAreaView style={{flex: 1}}>
             <View>
                 <View style={{paddingTop: 10, flexDirection: 'row'}}>
-                    <View style={{width: '40%', 
-                        alignItems: 'center',
-                        paddingLeft: 20,
+                    <View style={{width: '45%', 
+                        alignItems: 'flex-start',
+                        paddingLeft: 25,
                         justifyContent: 'center'}}>
                             <Text style={{...styles.text, color: SystemColors.VeryLightBlue}}>Ворота №</Text>
                     </View>
-                    <View style={{width: '60%', 
+                    <View style={{width: '55%', 
                         alignItems: 'flex-start', 
                         justifyContent: 'center',
-                        }}><Input2 />
+                        }}><Input style={{width: 40,borderRadius: 3, color: SystemColors.VeryLightBlue, 
+                        textAlign: 'center', borderColor: SystemColors.VeryLightBlue, borderWidth: 1}} 
+                        value={gateNumber} onChangeText={text => setGateNumber(text)}/>
                     </View>
                 </View>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingTop:10, paddingBottom: 15}}>
-                <View style={{width: '45%', alignItems: 'center', paddingLeft: 8}}>
+                <View style={{width: '45%', alignItems: 'flex-start', paddingLeft: 25}}>
                     <Text style={{...styles.text, 
                         color: !isContainer? SystemColors.VeryLightBlue : SystemColors.VeryLightBlue,
                         opacity: isContainer? 0.15 : 1
@@ -156,58 +223,46 @@ export default function Receiving ({onUpload}: ImageUploaderProps) {
                     value={isContainer}
                     onChange={(newValue) => setIsContaner(newValue)}/>
                 </View>
-                <View style={{width: '45%', alignItems: 'flex-start', paddingLeft: 30}}>
+                <View style={{width: '45%', alignItems: 'flex-start', paddingLeft: 55}}>
                     <Text style={{...styles.text, 
                         color: isContainer? SystemColors.VeryLightBlue : SystemColors.VeryLightBlue,
                         opacity: isContainer? 1 : 0.15
                     }}>Авто</Text>
                 </View>
             </View>
-            <View style={styles.toggleButtonContainer}>
-                    <Button 
-                    style={styles.toggleButton}
-                    text={showDefectiveProducts ? "СКРЫТЬ БРАК" : "БРАК В ПРИХОДЕ" }
-                    onPress={toggleDefectiveProducts}/>
-            </View>
-            <View>
-                {showDefectiveProducts && (
-                    <View style={styles.defectiveContainer}>
-                        <Text style={styles.defectiveTitle}>Добавьте фото</Text>
-                        <View style={styles.defectiveImagesContainer}>
-                            {defectiveImages.map((uri, index) => (
-                                <Pressable key={index} onPress={()=> pickDefectiveImages()}>
-                                    <Image
-                                    source={{uri}}
-                                    style = {styles.defectiveImage}/>
-                                </Pressable>
-                            ))}
-                            <Pressable style={styles.addDefectiveButton}
-                            onPress={()=> pickDefectiveImages()}>
-                                <Text style={styles.addDefectiveButtonText}>+</Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                )}
+            <View style={{width: "90%", alignSelf: 'center'}}>
+            <DefectivePhotosHandler
+            onImagesChange={setDefectivePhotos}
+            key={resetPhotos ? 'photos_reset' : 'photos_normal'}
+            buttonText={{
+                show: "БРАК В ПРИХОДЕ",
+                hide: "СКРЫТЬ ФОТО"
+            }}
+            title=" Фото брака"/> 
+            {/* поставил костыль в виде пробела перед текстом для выравнивания */}
             </View>
             <ScrollView style={styles.scrollContainer}>
             <View style={styles.container}>
                 {DEFAULT_IMAGES.slice(0,9).map((defaultImage, index)=>(
-                <Pressable key={index} onPress={()=>pickAvatar(index)}>
-                    <Image source={imageUris[index] ? {uri: imageUris[index]!} : defaultImage}
-                    style={{ width: '90%', height: undefined, resizeMode:'cover', aspectRatio:16/9, borderRadius: 3}}/>
+                <Pressable key={index} onPress={()=>takePhoto(index)}>
+                    <Image source={processPhotos[index] ? {uri: processPhotos[index]!} : defaultImage}
+                    style={{ width: '90%', height: undefined, resizeMode:'cover', aspectRatio:16/9, borderRadius: 9}}/>
                 </Pressable>
                 ))}
                 { !isContainer && (
-                    <Pressable onPress={()=> pickAvatar(9)}>
+                    <Pressable onPress={()=> takePhoto(9)}>
                         <Image 
-                        source={imageUris[9] ? {uri: imageUris[9]!} : DEFAULT_IMAGES[9]}
-                        style={{ width: '90%', height: undefined, resizeMode:'cover', aspectRatio:16/9, borderRadius: 3}}
+                        source={processPhotos[9] ? {uri: processPhotos[9]!} : DEFAULT_IMAGES[9]}
+                        style={{ width: '90%', height: undefined, resizeMode:'cover', aspectRatio:16/9, borderRadius: 9}}
                         />
                     </Pressable>
                 )}
             </View>
             <View style={styles.buttonContainer}>
-            <Button style={styles.button} text="ОТПРАВИТЬ" onPress={clearAllImages}/>
+            <Animated.View style={{transform: [{ scale: buttonScale }] }}>
+            <Button style={styles.button} text={isSubmitting ? "ОТПРАВКА..." : "ОТПРАВИТЬ"}
+             onPress={handleSubmit} disabled={isSubmitting}/>
+             </Animated.View>
             </View>
         </ScrollView>
         </SafeAreaView>
@@ -221,7 +276,8 @@ const styles = StyleSheet.create({
     },
     container: {
         alignItems: 'center', 
-        gap: 30
+        gap: 30,
+        marginTop: 20
     },
     buttonContainer: {
         paddingVertical: 40, 
@@ -229,7 +285,8 @@ const styles = StyleSheet.create({
         marginBottom: 40
     },
     button: {
-        width: '90%'
+        width: 250,
+        alignSelf: 'center'
     },
     scrollContainer: {
         flexGrow: 1,
@@ -242,7 +299,8 @@ const styles = StyleSheet.create({
     toggleButton: {
         width: '90%',
         backgroundColor: SystemColors.LightBlue,
-        fontFamily: CustomFonts.medium
+        fontFamily: CustomFonts.medium,
+        borderRadius:6
     },
     defectiveContainer: {
         marginTop: 0,
@@ -265,13 +323,13 @@ const styles = StyleSheet.create({
     defectiveImage: {
         width: 150,
         height: 100,
-        borderRadius: 3,
+        borderRadius: 6,
         resizeMode: 'cover'
     },
     addDefectiveButton: {
         width: 150,
         height: 100,
-        borderRadius: 3,
+        borderRadius: 6,
         borderWidth: 1,
         borderColor: SystemColors.VeryLightBlue,
         justifyContent: 'center',

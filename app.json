@@ -1,17 +1,15 @@
 {
   "expo": {
-    "name": "BREEZ",
-    "slug": "BREEZ",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/line-05.png",
+    "icon": "./assets/iconlogo.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "backgroundColor": "#0b3784",
+    "backgroundColor": "#1A488E",
     "splash": {
-      "image": "./assets/line-05.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0b3784"
+      "image": "./assets/SplashScreen_1080х1920.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#1A488E"
     },
     "ios": {
       "supportsTablet": true,
@@ -20,24 +18,27 @@
         "NSMicrophoneUsageDescription": "Приложению нужен доступ к микрофону, если вы хотите записывать видео со звуком.",
         "NSPhotoLibraryUsageDescription": "Приложению нужен доступ к вашей галерее, чтобы сохранять и выбирать фотографии."
       },
-      "bundleIdentifier": "com.yourcompany.breez" 
+      "bundleIdentifier": "com.yourcompany"
     },
     "android": {
+      "usesCleartextTraffic": true,
+      "networkSecurityConfig": "./network_security_config.xml",
       "permissions": [
+        "INTERNET",
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO", 
-        "android.permission.READ_MEDIA_IMAGES", 
-        "android.permission.READ_MEDIA_VIDEO" 
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/line-05.png",
+        "foregroundImage": "./assets/iconlogo.png",
         "backgroundColor": "#0b3784"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.yourcompany.breez" 
+      "package": "com.yourcompany.yourapp"
     },
     "web": {
-      "favicon": "./assets/line-05.png"
+      "favicon": "./assets/iconlogo.png"
     },
     "plugins": [
       "expo-router",
@@ -52,16 +53,23 @@
         "expo-image-picker",
         {
           "photosPermission": "Разрешите доступ к галерее, чтобы выбирать изображения.",
-          "cameraPermission": "Разрешите доступ к камере, если хотите сделать новое фото." 
+          "cameraPermission": "Разрешите доступ к камере, если хотите сделать новое фото."
         }
       ],
-      ["expo-notifications", 
-      {
-        "icon":"./assets/line-05.png",
-        "color": "#ffffff"
-      }
-    ]
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/iconlogo.png",
+          "color": "#ffffff"
+        }
+      ]
     ],
-    "scheme": "breez"
+    "scheme": "Мобильный кладовщик",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c4ece87d-eb9c-45bd-b814-d449d11c5404"
+      }
+    }
   }
 }

@@ -4,7 +4,7 @@ import { authAtom } from "../../auth/model/auth.state";
 import axios, { AxiosError } from "axios";
 import { API } from "../api/api";
 
-
+export const userProfileAtom = atom<any>(null)
 
 export const profileAtom = atom<UserState>({
     profile: null,
@@ -16,7 +16,7 @@ export const updateProfileAtom = atom(
     async (get) => {
         return get(profileAtom)
     },
-    async (get, set, {photo}: {photo: string}) => {
+    async (get, set, {photo}: {photo?: string}) => {
         try {
             const {access_token} = await get(authAtom)
             const { data } = await axios.patch<User>(API.profile, {

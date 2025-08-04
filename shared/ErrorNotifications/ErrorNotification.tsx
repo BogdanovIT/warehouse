@@ -15,7 +15,8 @@ export function ErrorNotification({error}: ErrorNotificationProps) {
     }
     
     useEffect(() => {
-        if (!error) {
+        if (!error || error.trim()==="") {
+            setIsShown(false)
             return
         }
         setIsShown(true);
@@ -28,8 +29,8 @@ export function ErrorNotification({error}: ErrorNotificationProps) {
         }
     }, [error])
 
-    if (!isShown) {
-        return <></>
+    if (!isShown || !error || error.trim() === "") {
+        return null
     }
     return (
         <Animated.View style={{

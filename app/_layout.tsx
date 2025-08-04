@@ -36,6 +36,7 @@ export default function RootLayout() {
             }}> 
                 {/* <Stack.Screen  name="welcome"/> */}
                 <Stack.Screen  name="login"/>
+                <Stack.Screen  name="register"/>
                 <Stack.Screen  name="restore" options={{
                     presentation:'modal',
                     
