@@ -129,7 +129,7 @@ export default function Shipment ({onUpload}: ImageUploaderProps) {
                     type: 'image/jpeg'
                 } as any)
             })
-            const response = await fetch('http://90.189.219.97:8081/api/upload-temp-photos', {
+            const response = await fetch('https://literally-fair-lark.cloudpub.ru/api/upload-temp-photos', {
                 method: 'POST',
                 body: formData as any,
                 headers: {
@@ -160,7 +160,7 @@ export default function Shipment ({onUpload}: ImageUploaderProps) {
         setIsSubmitting(true)
         try {
             const { savedPaths } = await uploadPhotoToServer(photosToUpload)
-            const response  = await fetch('http://90.189.219.97:8081/api/shipment/send', {
+            const response  = await fetch('https://literally-fair-lark.cloudpub.ru/api/shipment/send', {
                 method: "POST",
                 body: JSON.stringify({
                     photoPaths: savedPaths,

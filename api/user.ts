@@ -3,7 +3,7 @@ import { WarehouseKeys } from "../shared/documentPrefixes";
 
 
 // 1. Лучше вынести в .env
-const API_URL = "http://90.189.219.97:8081/api";
+const API_URL = "https://literally-fair-lark.cloudpub.ru/api";
 
 // 2. Добавляем интерфейс для ответа
 interface UserProfile {

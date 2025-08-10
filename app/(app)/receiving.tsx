@@ -99,7 +99,7 @@ export default function Receiving () {
             const result = await launchCameraAsync({
                 mediaTypes: ['images'],
                 allowsEditing: false,
-                quality: 1,
+                quality: 0.7,
             });            
             if (!result.canceled) {
                 const newPhotos = [...processPhotos]
@@ -123,7 +123,7 @@ export default function Receiving () {
                 } as any)
             }
         })
-        const response = await fetch('http://90.189.219.97:8081/api/upload-temp-photos', {
+        const response = await fetch('https://literally-fair-lark.cloudpub.ru/api/upload-temp-photos', {
             method: 'POST',
             body: formData as any,
             headers: {
@@ -154,7 +154,7 @@ export default function Receiving () {
                     type: 'image/jpeg'
                 } as any)
             })
-            const uploadResponse = await fetch('http://90.189.219.97:8081/api/upload-temp-photos', {
+            const uploadResponse = await fetch('https://literally-fair-lark.cloudpub.ru/api/upload-temp-photos', {
                 method: 'POST',
                 body: uploadFormData as any,
                 headers: {'Content-Type': 'multipart/form-data',}
@@ -169,7 +169,7 @@ export default function Receiving () {
                 processPhotos: processPaths,
                 defectivePhotos: defectPaths,
             }
-            const mailResponse = await fetch('http://90.189.219.97:8081/api/receiving/send', {
+            const mailResponse = await fetch('https://literally-fair-lark.cloudpub.ru/api/receiving/send', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json',},
                 body: JSON.stringify(mailData)

@@ -54,11 +54,10 @@ export default function Register() {
         if (!validate()) return
         
         try {
-            const response = await fetch('http://90.189.219.97:8081/api/users/register', {
+            const response = await fetch('https://literally-fair-lark.cloudpub.ru/api/users/register', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'mobilnyj-kladovshik/1.0.0 (Android)'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     firstName: formData.firstName,

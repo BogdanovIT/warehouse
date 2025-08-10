@@ -36,7 +36,7 @@ export const RestorePasswordAtom = atom(
     async (get, set, email:string) => {
         try {
             set(RestorePasswordStateAtom, {isLoading: true, error: null})
-            await axios.post('http://90.189.219.97:8081/api/auth/restore-password', { email })
+            await axios.post('https://literally-fair-lark.cloudpub.ru/api/auth/restore-password', { email })
             set(RestorePasswordStateAtom, {isLoading: false, error: null})
         } catch (error) {
             let errorMessage = "Ошибка восстановления пароля"

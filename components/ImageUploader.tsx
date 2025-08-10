@@ -45,7 +45,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         try {const result = await launchCameraAsync({
             mediaTypes: ['images'],
             allowsEditing: false,
-            quality: 1
+            quality: 0.7
         })
         if (!result.canceled) {
             const newUris = [...imageUris]

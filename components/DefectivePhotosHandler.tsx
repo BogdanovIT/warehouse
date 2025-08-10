@@ -47,7 +47,7 @@ export const DefectivePhotosHandler: React.FC<DefectivePhotosHandlerProps> = ({
             const result = await launchCameraAsync ({
                 mediaTypes: ['images'],
                 allowsEditing: false,
-                quality: 1
+                quality: 0.7
             })
             if (!result.canceled) {
                 const newDefectiveImages = [...defectiveImages, result.assets[0].uri]

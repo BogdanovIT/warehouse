@@ -1,5 +1,6 @@
 {
   "expo": {
+    "name": "Мобильный кладовщик",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/iconlogo.png",
@@ -24,7 +25,7 @@
       "usesCleartextTraffic": true,
       "networkSecurityConfig": "./network_security_config.xml",
       "permissions": [
-        "INTERNET",
+        "android.permission.INTERNET",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.READ_MEDIA_IMAGES",
@@ -64,12 +65,13 @@
         }
       ]
     ],
-    "scheme": "Мобильный кладовщик",
+    "scheme": "mobilnyj kladovshik",
     "extra": {
       "router": {},
       "eas": {
         "projectId": "c4ece87d-eb9c-45bd-b814-d449d11c5404"
       }
-    }
+    },
+    "owner": "bogdanov_andrey"
   }
 }

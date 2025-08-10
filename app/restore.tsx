@@ -20,7 +20,7 @@ export default function RestorePassword() {
     const [error, setError] = useState('')
     const sendCode = async () => {
         try {
-            await axios.post('http://90.189.219.97:8081/api/auth/restore-password', {email})
+            await axios.post('https://literally-fair-lark.cloudpub.ru/api/auth/restore-password', {email})
             setStep(2)
         } catch {
             setError("Ошибка отправки кода")
@@ -28,7 +28,7 @@ export default function RestorePassword() {
     }
     const resetPassword = async () => {
         try {
-            await axios.post('http://90.189.219.97:8081/api/auth/reset-password', {
+            await axios.post('https://literally-fair-lark.cloudpub.ru/api/auth/reset-password', {
                 email, 
                 code,
                 newPassword
