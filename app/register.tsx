@@ -17,21 +17,78 @@ export default function Register() {
         password: '',
         confirmPassword: '',
         operators: [''],
-        place: ''
+        place: '',
+        verificationCode: ''
+    })
+    const [showVerification, setShowVerification] = useState(false)
+    const [passwordErrors, setPasswordErrors] = useState({
+        hasUpperCase: false,
+        hasLowerCase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+        hasMinLength: false
     })
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({...prev, [field]: value}))
+        if (field === 'password') {
+            checkPasswordStrength(value)
+        }
+    }
+    const checkPasswordStrength = (password: string) => {
+        setPasswordErrors({
+            hasUpperCase: /[A-Z]/.test(password),
+            hasLowerCase: /[a-z]/.test(password),
+            hasNumber: /\d/.test(password),
+            hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+            hasMinLength: password.length >= 8
+        })
+    }
+    const validateEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@breez\.ru$/
+        return emailRegex.test(email)
+    }
+    const validatePassword = () => {
+        return Object.values(passwordErrors).every(error => error === true)
     }
     const validate = () => {
+        if (!validateEmail(formData.email)) {
+            Alert.alert('Ошибка', "Укзан сторонний email, укажите корпоративный email")
+            return false
+        }
+        if (!validatePassword()) {
+            Alert.alert("Ошибка","Пароль не соответствует требованиям безопасности")
+            return false
+        }
         if (formData.password !== formData.confirmPassword) {
             Alert.alert('Ошибка, пароли не совпадают')
             return false
         }
         if (formData.email !== formData.confirmEmail) {
-            Alert.alert('Ошибка, email не совпадает')
+            Alert.alert('Ошибка, email не совпадают')
             return false
         }
         return true
+    }
+    const sendVerificationCode = async () => {
+        try {
+            const response = await fetch('https://literally-fair-lark.cloudpub.ru/api/users/send-verification', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: formData.email
+                })
+            })
+            if (response.ok) {
+                setShowVerification (true)
+                Alert.alert("Успешно","Код подтверждения отправлен на указанный email")
+            } else {
+                Alert.alert("Ошибка", "Не удалось отправить код подтверждения")
+            } 
+        } catch (error) {
+            Alert.alert("Ошибка", "Не удалось отправить код подтверждения")
+        }
     }
     const [place, setPlace] = useState('')
     const [operators, setOperators] = useState<string[]>([''])
@@ -52,8 +109,25 @@ export default function Register() {
     }
     const handleSubmit = async () => {
         if (!validate()) return
+        if (!showVerification) {
+            await sendVerificationCode()
+            return
+        }
         
         try {
+            const verifyResponse = await fetch('https://literally-fair-lark.cloudpub.ru/api/users/verify-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: formData.email,
+                    code: formData.verificationCode
+                })
+            })
+            if (!verifyResponse.ok) {
+                Alert.alert("Ошибка","Неверный код подтверждения")
+            }
             const response = await fetch('https://literally-fair-lark.cloudpub.ru/api/users/register', {
                 method: 'POST',
                 headers: {
@@ -91,9 +165,9 @@ export default function Register() {
         keyboardVerticalOffset={Platform.select({ios:60, android:0})}
         style={styles.avoidingView}>
         <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps='handled'
-        showsVerticalScrollIndicator={false} 
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps='handled'
+            showsVerticalScrollIndicator={false} 
             showsHorizontalScrollIndicator={false} 
             style={styles.scrollContainer}>
                 <View style={styles.container}>
@@ -108,15 +182,45 @@ export default function Register() {
                     <Text style={styles.textStyle}>Email:</Text>
                     <Input style={styles.inputData} value={formData.email}
                     autoCapitalize="none"
-                    keyboardType="email-address" onChangeText={(text) => handleChange('email', text.toLowerCase())}/>
+                    keyboardType="email-address" onChangeText={(text) => handleChange('email', text.toLowerCase())}
+                    placeholder="user@breez.ru"/>
                     <Text style={styles.textStyle}>Подтвердите email:</Text>
                     <Input style={styles.inputData} value={formData.confirmEmail} 
                     autoCapitalize="none"
-                    keyboardType="email-address" onChangeText={(text) => handleChange('confirmEmail', text.toLowerCase())}/>
+                    keyboardType="email-address" onChangeText={(text) => handleChange('confirmEmail', text.toLowerCase())}
+                    placeholder="user@breez.ru"/>
                     <Text style={styles.textStyle}>Пароль:</Text>
                     <InputRegister isPassword style={{...styles.inputData}} value={formData.password} onChangeText={(text) => handleChange('password', text)}/>
+                    <View style={styles.passwordHintContainer}>
+                        <Text style={styles.passwordHintTitle}>Пароль должен содержать:</Text>
+                        <Text style={[styles.passwordHint, passwordErrors.hasMinLength && styles.passwordHintValid]}>
+                            Минимум 8 символов
+                        </Text>
+                        <Text style={[styles.passwordHint, passwordErrors.hasUpperCase && styles.passwordHintValid]}>
+                            Заглавные буквы (A-Z)
+                        </Text>
+                        <Text style={[styles.passwordHint, passwordErrors.hasLowerCase && styles.passwordHintValid]}>
+                            Строчные буквы (a-z)
+                        </Text>
+                        <Text style={[styles.passwordHint, passwordErrors.hasNumber && styles.passwordHintValid]}>
+                            Цифры (0-9)
+                        </Text>
+                        <Text style={[styles.passwordHint, passwordErrors.hasSpecialChar && styles.passwordHintValid]}>
+                            Спецсимволы (!@#$% и др.)
+                        </Text>
+                    </View>
                     <Text style={styles.textStyle}>Подтвердите пароль:</Text>
                     <InputRegister isPassword style={styles.inputData} value={formData.confirmPassword} onChangeText={(text) => handleChange('confirmPassword', text)}/>
+                    {showVerification && (
+                        <>
+                            <Text style={styles.textStyle}>Код подтверждения:</Text>
+                            <Input style={styles.inputData}
+                            value={formData.verificationCode}
+                            keyboardType="numeric"
+                            onChangeText={(text) => handleChange('verificationCode', text)}
+                            placeholder="Введите код из письма" />
+                        </>
+                    )}
                     <Text style={styles.textStyle}>Укажите свой РЦ:</Text>
                     <View style={{width: '85%', borderWidth: 1, borderColor: SystemColors.VeryLightBlue, borderRadius: 6,
                         marginBottom: 10, alignSelf: 'center', overflow: 'hidden'
@@ -134,6 +238,7 @@ export default function Register() {
                             <Picker.Item style={{...styles.pickerItem, fontSize:16}} label="РРЦ Бриз Новосибирск LV" value="РРЦ Бриз Новосибирск LV" />
                             <Picker.Item style={{...styles.pickerItem, fontSize:16}} label="РРЦ Бриз Ростов LV" value="РРЦ Бриз Ростов LV" />
                             <Picker.Item style={{...styles.pickerItem, fontSize:16}} label="РРЦ Бриз Самара LV" value="РРЦ Бриз Самара LV" />
+                            <Picker.Item style={{...styles.pickerItem, fontSize:16}} label="РРЦ Бриз Краснодар LV" value="РРЦ Бриз Краснодар LV" />
                         </Picker>
                     </View>
                     <Text style={styles.textStyle}>Укажите email оператора(ов):</Text>
@@ -143,7 +248,8 @@ export default function Register() {
                             <InputRegister style={styles.operatorInput} value={formData.operators[index]}
                             autoCapitalize="none"
                             keyboardType="email-address"
-                            onChangeText={(text) => updateOperator(index, text.toLowerCase())}/>
+                            onChangeText={(text) => updateOperator(index, text.toLowerCase())}
+                            placeholder="operator@breez.ru"/>
                             </View>
                             {operators.length > 1 && (
                                 <TouchableOpacity style={styles.removeButton}
@@ -159,7 +265,8 @@ export default function Register() {
                         <Text style={styles.addButtonText}>+ Добавить оператора</Text>
                     </TouchableOpacity>
                     
-                    <Button text="ГОТОВО" onPress={handleSubmit} style={{paddingTop: 30, width: '75%', alignSelf: 'center', marginBottom: 30}}/>
+                    <Button text= {showVerification ? "ПОДТВЕРДИТЬ РЕГИСТРАЦИЮ" : "ОТПРАВИТЬ КОД ПОДТВЕРЖДЕНИЯ"}
+                     onPress={handleSubmit} style={{paddingTop: 30, width: '75%', alignSelf: 'center', marginBottom: 30}}/>
         </ScrollView>
         </KeyboardAvoidingView>
         </View>
@@ -270,4 +377,26 @@ const styles = StyleSheet.create({
         color: SystemColors.VeryLightBlue,
         textDecorationLine: 'underline'
     },
+    passwordHintContainer: {
+        width: '85%',
+        alignSelf: 'center',
+        marginBottom: 15,
+        padding: 10,
+        backgroundColor: SystemColors.VeryLightBlue,
+        borderRadius: 6
+    },
+    passwordHintTitle: {
+        color: SystemColors.VeryLightBlue,
+        fontFamily: CustomFonts.medium,
+        marginBottom: 5
+    },
+    passwordHint: {
+        color: SystemColors.VeryLightBlue,
+        fontSize: 12,
+        opacity: 0.7
+    },
+    passwordHintValid: {
+        color: "#4CAF50",
+        opacity: 1
+    }
 })

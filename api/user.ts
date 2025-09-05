@@ -2,10 +2,10 @@ import axios from "axios";
 import { WarehouseKeys } from "../shared/documentPrefixes";
 
 
-// 1. Лучше вынести в .env
+
 const API_URL = "https://literally-fair-lark.cloudpub.ru/api";
 
-// 2. Добавляем интерфейс для ответа
+
 interface UserProfile {
   id: number;
   email: string;
@@ -24,7 +24,7 @@ export const getUserProfile = async (token: string): Promise<UserProfile> => {
         Authorization: `Bearer ${token}`
       },
       timeout: 10000,
-      validateStatus: (status) => status < 500 // Не считать 401 ошибкой
+      validateStatus: (status) => status < 500 
     });
     if (response.status === 401) {
         throw new Error('Требуется авторизация')

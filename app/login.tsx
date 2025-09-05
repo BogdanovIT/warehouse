@@ -1,4 +1,4 @@
-import { Image, KeyboardAvoidingView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, KeyboardAvoidingView, StyleSheet, Text, View } from 'react-native';
 import { Input } from '@/shared/input/input';
 import { Button } from '@/button/button';
 import { useEffect, useState } from 'react';
@@ -29,9 +29,28 @@ export default function Login() {
       setEmail(decodeURIComponent(params.email))
     }
   }, [params?.email])
-
-  const submit = () => {
-    
+  const checkBlockStatus = async (email: string): Promise<boolean> => {
+    try {
+      const response = await fetch('https://literally-fair-lark.cloudpub.ru/api/auth/check-block-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({email})
+      })
+      const data = await response.json()
+      if (data.blocked) {
+        Alert.alert("Пользователь заблокирован", data.message)
+        return true
+      }
+      return false
+    } catch(error) {
+      console.error('Ошибка проверки блокировки', error)
+      return false
+    }
+  }
+  const submit = async () => {
+    setLocalError(null)
     if (!email) {
       setLocalError({
         message: "Поле email обязательно",
@@ -46,6 +65,8 @@ export default function Login() {
       })
       return
     }
+    const isBlocked = await checkBlockStatus(email)
+    if (isBlocked) {return}
     login({ email, password})
   }
   
@@ -64,6 +85,9 @@ export default function Login() {
       router.replace('/(app)')
     }
   }, [access_token])
+
+  
+
   return (
     <View style={styles.container}>
       {/* <ErrorNotification error={localError?.message ? localError.message : null} /> */}
