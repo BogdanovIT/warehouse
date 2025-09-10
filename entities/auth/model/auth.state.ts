@@ -79,11 +79,7 @@ export const loginAtom = atom(
     if (!data.accessToken) {
         throw new Error('Сервер не вернул токен')
     }
-    // console.log(data.accessToken)
-    // console.log("Auth Success:", {
-    //     receivedToken: !!data.accessToken,
-    //     user: data.user
-    // })
+
     set(authAtom, {
         isLoading: false,
         access_token: data.accessToken,

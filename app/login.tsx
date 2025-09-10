@@ -18,11 +18,11 @@ export default function Login() {
   const [{access_token, isLoading, error}, login] = useAtom(loginAtom)
   const params = useLocalSearchParams<{ email?: string}>()
 
-  useEffect(() => {
-    if (access_token) {
-      router.replace('/index')
-    }
-  }, [access_token])
+  // useEffect(() => {
+  //   if (access_token) {
+  //     router.replace('/index')
+  //   }
+  // }, [access_token])
 
   useEffect(() => {
     if (params?.email) {
@@ -82,7 +82,7 @@ export default function Login() {
 
   useEffect(() => {
     if (access_token) {
-      router.replace('/(app)')
+      router.replace('/index')
     }
   }, [access_token])
 

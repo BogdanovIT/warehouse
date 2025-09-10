@@ -71,23 +71,28 @@ export default function Register() {
     }
     const sendVerificationCode = async () => {
         try {
+            if (!formData.email || !formData.email.includes('@')) {
+                Alert.alert("Ошибка", "Пожалуйста, введите корректный email")
+            }
             const response = await fetch('https://literally-fair-lark.cloudpub.ru/api/users/send-verification', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    email: formData.email
+                    email: formData.email.trim()
                 })
             })
+            const responseData = await response.json()
             if (response.ok) {
                 setShowVerification (true)
                 Alert.alert("Успешно","Код подтверждения отправлен на указанный email")
             } else {
-                Alert.alert("Ошибка", "Не удалось отправить код подтверждения")
+                const errorMessage = responseData.message || "Не удалось отправить код подтверждения"
+                Alert.alert("Ошибка", errorMessage)
             } 
         } catch (error) {
-            Alert.alert("Ошибка", "Не удалось отправить код подтверждения")
+            Alert.alert("ошибка", "не удалось отправить код подтверждения")
         }
     }
     const [place, setPlace] = useState('')
@@ -211,16 +216,6 @@ export default function Register() {
                     </View>
                     <Text style={styles.textStyle}>Подтвердите пароль:</Text>
                     <InputRegister isPassword style={styles.inputData} value={formData.confirmPassword} onChangeText={(text) => handleChange('confirmPassword', text)}/>
-                    {showVerification && (
-                        <>
-                            <Text style={styles.textStyle}>Код подтверждения:</Text>
-                            <Input style={styles.inputData}
-                            value={formData.verificationCode}
-                            keyboardType="numeric"
-                            onChangeText={(text) => handleChange('verificationCode', text)}
-                            placeholder="Введите код из письма" />
-                        </>
-                    )}
                     <Text style={styles.textStyle}>Укажите свой РЦ:</Text>
                     <View style={{width: '85%', borderWidth: 1, borderColor: SystemColors.VeryLightBlue, borderRadius: 6,
                         marginBottom: 10, alignSelf: 'center', overflow: 'hidden'
@@ -264,7 +259,16 @@ export default function Register() {
                     onPress={addOperatorField}>
                         <Text style={styles.addButtonText}>+ Добавить оператора</Text>
                     </TouchableOpacity>
-                    
+                    {showVerification && (
+                        <>
+                            <Text style={styles.textStyle}>Код подтверждения:</Text>
+                            <Input style={styles.inputData}
+                            value={formData.verificationCode}
+                            keyboardType="numeric"
+                            onChangeText={(text) => handleChange('verificationCode', text)}
+                            placeholder="Введите код из письма" />
+                        </>
+                    )}
                     <Button text= {showVerification ? "ПОДТВЕРДИТЬ РЕГИСТРАЦИЮ" : "ОТПРАВИТЬ КОД ПОДТВЕРЖДЕНИЯ"}
                      onPress={handleSubmit} style={{paddingTop: 30, width: '75%', alignSelf: 'center', marginBottom: 30}}/>
         </ScrollView>
@@ -386,12 +390,13 @@ const styles = StyleSheet.create({
         borderRadius: 6
     },
     passwordHintTitle: {
-        color: SystemColors.VeryLightBlue,
+        color: SystemColors.PrimaryBlue,
         fontFamily: CustomFonts.medium,
-        marginBottom: 5
+        marginBottom: 5,
+        paddingTop: 15
     },
     passwordHint: {
-        color: SystemColors.VeryLightBlue,
+        color: '#fc0518',
         fontSize: 12,
         opacity: 0.7
     },
