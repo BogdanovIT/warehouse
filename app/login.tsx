@@ -11,18 +11,14 @@ export default function Login() {
   interface AppError {
     message: string
     code?: number
+    blocked?: boolean
+    reason?: string
   }
   const [localError, setLocalError] = useState<AppError | null>(null)
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [{access_token, isLoading, error}, login] = useAtom(loginAtom)
   const params = useLocalSearchParams<{ email?: string}>()
-
-  // useEffect(() => {
-  //   if (access_token) {
-  //     router.replace('/index')
-  //   }
-  // }, [access_token])
 
   useEffect(() => {
     if (params?.email) {
@@ -49,6 +45,17 @@ export default function Login() {
       return false
     }
   }
+
+  const showErrorAlert = (error: AppError) => {
+    if (error.blocked) {
+      Alert.alert(
+        "Аккаунт заблокирован",
+        error.reason || "Причина не указана"
+      )
+    } else {
+      Alert.alert("Ошибка:", error.message)
+    }
+  }
   const submit = async () => {
     setLocalError(null)
     if (!email) {
@@ -65,18 +72,36 @@ export default function Login() {
       })
       return
     }
+
     const isBlocked = await checkBlockStatus(email)
-    if (isBlocked) {return}
+    if (isBlocked) {
+      return
+    }
     login({ email, password})
   }
   
 
   useEffect(()=> {
     if (error) {
-      setLocalError({
-        message: error.message,
-        code: error.code
-      })
+      let errorMessage = "Произошла ошибка при входе"
+      let isBlocked = false
+      let blockReason = ''
+      const anyError = error as any
+      if (anyError.message) {
+        errorMessage = anyError.message
+      }
+      if (error.code === 403 || errorMessage.includes('заблокирован')) {
+        isBlocked = true
+        blockReason = anyError.reason || 'Причина не указана'
+      }
+      const appError: AppError = {
+        message: errorMessage,
+        code: anyError.code,
+        blocked: isBlocked,
+        reason: blockReason
+      }
+      setLocalError(appError)
+      showErrorAlert(appError)
     }
   }, [error])
 
@@ -85,12 +110,15 @@ export default function Login() {
       router.replace('/index')
     }
   }, [access_token])
-
+  useEffect(() => {
+    if (localError && !localError.blocked) {
+      Alert.alert("Ошибка", localError.message)
+    }
+  }, [localError]) 
   
 
   return (
     <View style={styles.container}>
-      {/* <ErrorNotification error={localError?.message ? localError.message : null} /> */}
       <KeyboardAvoidingView behavior={'padding'} 
       style={styles.content}>
       <Image style={styles.logo} source={require('./../assets/images/logo.png')}/>

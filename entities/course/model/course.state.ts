@@ -1,56 +1,23 @@
 import { atom } from "jotai";
-import { StudentCourseDescription } from "./course.model";
-import { authAtom } from "../../auth/model/auth.state";
-import axios, { AxiosError } from "axios";
-import { API } from "../api/api";
+import { apiService, CourseItem } from "@/services/api";
 
-
-export const courseAtom = atom<CourseState>({
-    courses: [],
-    isLoading: false,
-    error: null
-})
-
-export const loadCourseAtom = atom(
-    async(get) => {
-        return get(courseAtom)
-    },
+export const coursesAtom = atom<CourseItem[]>([])
+export const testsAtom = atom<CourseItem[]>([])
+export const isLoadingAtom = atom<boolean>(true)
+export const errorAtom = atom<string | null>(null)
+export const loadContentAtom = atom(
+    null,
     async (get, set) => {
+        set(isLoadingAtom, true)
+        set(errorAtom, null)
         try {
-            const { access_token } = await get(authAtom)
-            set(courseAtom,{
-                isLoading: true,
-                courses: [],
-                error: null
-            })
-            const { data } = await axios.get<{my:StudentCourseDescription[]}>(API.my, {
-                params: {
-                    studentCourse: 'dontMy',
-                },
-                headers: {
-                    Authorization: `Bearer ${access_token}`,
-                }
-            })
-
-            set (courseAtom, {
-                isLoading: false,
-                courses: data.my,
-                error: null
-            })
-        } catch (error) {
-            if (error instanceof AxiosError) {
-                set(courseAtom, {
-                    isLoading: false,
-                    courses: [],
-                    error: error.response?.data.message
-                })
-            }
+            const { courses, tests } = await apiService.getAllContent()
+            set(coursesAtom, courses)
+            set(testsAtom, tests)
+        } catch(error) {
+            set(errorAtom, 'Ошибка при загрузке контента')
+        } finally {
+            set(isLoadingAtom, false)
         }
     }
 )
-
-export interface CourseState {
-    courses: StudentCourseDescription[]
-    isLoading: boolean
-    error: string | null
-}
