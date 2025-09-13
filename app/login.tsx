@@ -19,12 +19,86 @@ export default function Login() {
   const [password, setPassword] = useState<string>('')
   const [{access_token, isLoading, error}, login] = useAtom(loginAtom)
   const params = useLocalSearchParams<{ email?: string}>()
+  const [isFirstLoad, setIsFirstLoad] = useState(true)
+  const [hasUserInteracted, setHasUserInteracted] = useState(false)
 
   useEffect(() => {
     if (params?.email) {
       setEmail(decodeURIComponent(params.email))
     }
   }, [params?.email])
+
+  const getHumanReadableError = (error: any): AppError => {
+    const errorCode = error?.code
+    const errorMessage = error?.message || ''
+
+    if (errorMessage && !errorMessage.includes('status code') && !errorMessage.includes('Request failed')) {
+      return {
+        message: errorMessage,
+        code: errorCode,
+        blocked: errorCode === 403 || errorMessage.includes('заблокирован'),
+        reason: (error as any).reason
+      }
+    }
+    switch (errorCode) {
+      case 400:
+        return {
+          message: "Неверный запрос. Проверьте введенные данные",
+          code: errorCode
+        }
+      case 401:
+        return {
+          message: "Неверный email или пароль",
+          code: errorCode
+        }
+      case 403: 
+        return {
+          message: "Доступ запрещен",
+          code: errorCode,
+          blocked: true,
+          reason: "Аккаунт заблокирован"
+        }
+      case 404: 
+        return {
+          message: "Пользователь не найден",
+          code: errorCode
+        }
+      case 429: 
+        return {
+          message: "Слишком много попыток входа. Попробуйте позже",
+          code: errorCode
+        }
+      case 500:
+        return {
+          message: "Внутренняя ошибка сервера. Попробуйте позже"
+        }
+      case 502:
+      case 503:
+      case 504:
+        return {
+          message: "Сервер временно недоступен. Попробуйте позже",
+          code: errorCode
+        }
+      default:
+        if (errorMessage.includes('Network Error') || errorMessage.includes('network')) {
+          return {
+            message: "Нет соединения с интернетом. Проверьте подключение",
+            code: errorCode
+          }
+        }
+      if (errorMessage.includes('timeout')) {
+        return {
+          message: "Превышено время ожидания ответа от сервера",
+          code: errorCode
+        }
+      }
+      return {
+        message: "Произошла неизвестная ошибка. Попробуйте еще раз",
+        code: errorCode
+      }
+    }
+  }
+
   const checkBlockStatus = async (email: string): Promise<boolean> => {
     try {
       const response = await fetch('https://literally-fair-lark.cloudpub.ru/api/auth/check-block-status', {
@@ -46,30 +120,15 @@ export default function Login() {
     }
   }
 
-  const showErrorAlert = (error: AppError) => {
-    if (error.blocked) {
-      Alert.alert(
-        "Аккаунт заблокирован",
-        error.reason || "Причина не указана"
-      )
-    } else {
-      Alert.alert("Ошибка:", error.message)
-    }
-  }
   const submit = async () => {
     setLocalError(null)
+    setHasUserInteracted(true)
     if (!email) {
-      setLocalError({
-        message: "Поле email обязательно",
-        code: 400
-      })
+      Alert.alert("Ошибка", "Введите email")
       return
     }
     if (!password) {
-      setLocalError({
-        message: "Поле password обязательно",
-        code: 400
-      })
+      Alert.alert("Ошибка", "Введите пароль")
       return
     }
 
@@ -80,42 +139,30 @@ export default function Login() {
     login({ email, password})
   }
   
-
-  useEffect(()=> {
-    if (error) {
-      let errorMessage = "Произошла ошибка при входе"
-      let isBlocked = false
-      let blockReason = ''
-      const anyError = error as any
-      if (anyError.message) {
-        errorMessage = anyError.message
+  useEffect(() => {
+    if (error && !isFirstLoad) {
+      const humanReadableError = getHumanReadableError(error)
+      setLocalError(humanReadableError)
+      if (humanReadableError.blocked) {
+        Alert.alert("Аккаунт заблокирован", humanReadableError.reason || "Причина не указана")
+      } else {
+        Alert.alert("Ошибка входа", humanReadableError.message)
       }
-      if (error.code === 403 || errorMessage.includes('заблокирован')) {
-        isBlocked = true
-        blockReason = anyError.reason || 'Причина не указана'
-      }
-      const appError: AppError = {
-        message: errorMessage,
-        code: anyError.code,
-        blocked: isBlocked,
-        reason: blockReason
-      }
-      setLocalError(appError)
-      showErrorAlert(appError)
     }
-  }, [error])
+  }, [error, hasUserInteracted])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsFirstLoad(false)
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     if (access_token) {
       router.replace('/index')
     }
   }, [access_token])
-  useEffect(() => {
-    if (localError && !localError.blocked) {
-      Alert.alert("Ошибка", localError.message)
-    }
-  }, [localError]) 
-  
 
   return (
     <View style={styles.container}>
